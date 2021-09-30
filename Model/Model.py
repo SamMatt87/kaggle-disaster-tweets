@@ -4,6 +4,8 @@ import re
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import f1_score
 
 train=pd.read_csv('../nlp-getting-started/train.csv')
 test = pd.read_csv('../nlp-getting-started/test.csv')
@@ -97,5 +99,12 @@ train_filtered = train_set[['target', 'includes_website','num_hashtags', 'num_me
 valid_filtered = validation_set[['target', 'includes_website','num_hashtags', 'num_mentions','tweet_length']].reset_index()
 train_full = pd.concat([train_filtered,train_text_dense, train_hash_dense, train_keywords_df], axis=1)
 valid_full = pd.concat([valid_filtered,valid_text_dense, valid_hash_dense, valid_keywords_df],axis=1)
-print(valid_full)
+train_X = train_full.drop('target',axis=1)
+train_Y = train_full[['target']]
+valid_X = valid_full.drop('target',axis=1)
+valid_Y = valid_full[['target']]
+rf = RandomForestClassifier(max_depth=10, max_features=0.5, n_estimators=100)
+rf.fit(train_X,train_Y)
+predictions=rf.predict(valid_X)
+print(f1_score(valid_Y,predictions))
 
