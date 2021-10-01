@@ -6,7 +6,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score
-
+from matplotlib import pyplot as plt
+nltk.download('stopwords')
 train=pd.read_csv('../nlp-getting-started/train.csv')
 test = pd.read_csv('../nlp-getting-started/test.csv')
 def includes_website(text):
@@ -103,8 +104,11 @@ train_X = train_full.drop('target',axis=1)
 train_Y = train_full[['target']]
 valid_X = valid_full.drop('target',axis=1)
 valid_Y = valid_full[['target']]
-rf = RandomForestClassifier(max_depth=10, max_features=0.5, n_estimators=100)
-rf.fit(train_X,train_Y)
-predictions=rf.predict(valid_X)
-print(f1_score(valid_Y,predictions))
+rf_f1 = []
+for depth in range(4,30):
+    rf = RandomForestClassifier(max_depth=10, max_features=0.5, n_estimators=100)
+    rf.fit(train_X,train_Y.values)
+    predictions=rf.predict(valid_X)
+    rf_f1.append(f1_score(valid_Y,predictions))
+plt.plot(rf_f1,range(4,30))
 
