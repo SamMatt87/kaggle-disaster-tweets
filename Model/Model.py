@@ -7,6 +7,7 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import f1_score
 from matplotlib import pyplot as plt
+import numpy as np
 nltk.download('stopwords')
 train=pd.read_csv('../nlp-getting-started/train.csv')
 test = pd.read_csv('../nlp-getting-started/test.csv')
@@ -73,10 +74,10 @@ def preprocess(data):
 train_preprocessed = preprocess(train)
 test_preprocessed = preprocess(test)
 train_set, validation_set = train_test_split(train_preprocessed, train_size=0.8, random_state=77)
-CV = CountVectorizer()
+CV = CountVectorizer(max_features = 10000)
 train_vectoriser = CV.fit_transform(train_set.clean_text.values)
 validation_vectoriser = CV.transform(validation_set.clean_text.values)
-HCV = CountVectorizer()
+HCV = CountVectorizer(max_features=1000)
 train_hashtag_vectoriser = HCV.fit_transform(train_set.hashtags.values)
 validation_hashtag_vetoriser = HCV.transform(validation_set.hashtags.values)
 def column_names(vectoriser, prefix):
@@ -104,11 +105,16 @@ train_X = train_full.drop('target',axis=1)
 train_Y = train_full[['target']]
 valid_X = valid_full.drop('target',axis=1)
 valid_Y = valid_full[['target']]
-rf_f1 = []
-for depth in range(4,30):
-    rf = RandomForestClassifier(max_depth=10, max_features=0.5, n_estimators=100)
-    rf.fit(train_X,train_Y.values)
-    predictions=rf.predict(valid_X)
-    rf_f1.append(f1_score(valid_Y,predictions))
-plt.plot(rf_f1,range(4,30))
+def rf_test(train_X, train_Y, valid_X, valid_Y):
+    rf_f1 = []
+    for depth in range(4,30):
+        print('rf '+str(depth-3))
+        rf = RandomForestClassifier(max_depth=10, max_features=0.5, n_estimators=100)
+        rf.fit(train_X,np.ravel(train_Y))
+        predictions=rf.predict(valid_X)
+        rf_f1.append(f1_score(valid_Y,predictions))
+    plt.plot(range(4,30), rf_f1)
+    return np.argmax(rf_f1)+4
+
+print(rf_test(train_X,train_Y,valid_X,valid_Y))
 
